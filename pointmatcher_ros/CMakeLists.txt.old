@@ -16,7 +16,7 @@ find_package(PkgConfig REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES pointmatcher_ros
+#  LIBRARIES pointmatcher_ros
   CATKIN_DEPENDS
   roscpp
   sensor_msgs
@@ -28,11 +28,11 @@ catkin_package(
 
 find_package(pointmatcher 1.1.0 REQUIRED)
 message(STATUS "Using libpointmatcher version ${pointmatcher_VERSION}")
-
+message(STATUS "Using libpointmatcher version ${POINTMATCHER_INCLUDE_DIRS}")
 
 # c++ 0x
 #if("${CMAKE_CXX_COMPILER_ID}" MATCHES "clang") 
-# set(CMAKE_COMPILER_IS_CLANGXX)
+#	set(CMAKE_COMPILER_IS_CLANGXX)
 #endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "clang")
 if(CMAKE_COMPILER_IS_GNUCXX)
   execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
@@ -41,29 +41,23 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   else (GCC_VERSION VERSION_GREATER 4.4 OR GCC_VERSION VERSION_EQUAL 4.4)
     message(SEND_ERROR "You need GCC version 4.4 or greater to compile this library")
   endif (GCC_VERSION VERSION_GREATER 4.4 OR GCC_VERSION VERSION_EQUAL 4.4)
-else(CMAKE_COMPILER_IS_GNUCXX)
+  else(CMAKE_COMPILER_IS_GNUCXX)
   message(SEND_ERROR "You need partial C++0x support for N2351, N2672, N1984. Currently this build toolchain supports only GCC >= 4.4. If your compiler supports these specifications, please send us a patch.")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-
-add_library(pointmatcher_ros 
-  src/point_cloud.cpp 
-  src/transform.cpp
-)
-
+add_definitions(-DHAVE_YAML_CPP)
 include_directories(
   include
   ${PM_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}   
-  ${POINTMATCHER_INCLUDE_DIRS}
 )
 
-target_link_libraries(pointmatcher_ros 
-yaml-cpp 
-${catkin_LIBRARIES} 
-${PM_LIBRARIES} 
-${POINTMATCHER_LIBRARIES}
+add_library(pointmatcher_ros 
+src/point_cloud.cpp 
+src/transform.cpp
 )
+
+include_directories(${catkin_INCLUDE_DIRS}   ${POINTMATCHER_INCLUDE_DIRS})
+target_link_libraries(pointmatcher_ros yaml-cpp ${catkin_LIBRARIES} ${PM_LIBRARIES} ${POINTMATCHER_LIBRARIES})
 
 install(TARGETS pointmatcher_ros
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -71,7 +65,7 @@ install(TARGETS pointmatcher_ros
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
- install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
