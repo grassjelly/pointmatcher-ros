@@ -57,9 +57,8 @@ link_directories(${libpointmatcher_LIB})
 add_library(pointmatcher_ros src/point_cloud.cpp src/transform.cpp)
 target_link_libraries(pointmatcher_ros 
 yaml-cpp 
+pointmatcher
 ${catkin_LIBRARIES} 
-${PM_LIBRARIES} 
-${POINTMATCHER_LIBRARIES}
 )
 
 add_executable(
