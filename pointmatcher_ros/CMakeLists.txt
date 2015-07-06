@@ -9,10 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   eigen_conversions
+  message_generation
 )
 
 find_package(PkgConfig REQUIRED)
-# pkg_check_modules(PM libpointmatcher REQUIRED)
+find_package(libpointmatcher REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -24,11 +25,8 @@ catkin_package(
   tf
   tf_conversions
   eigen_conversions
+  message_runtime
 )
-
-find_package(pointmatcher 1.1.0 REQUIRED)
-message(STATUS "Using libpointmatcher version ${pointmatcher_VERSION}")
-
 
 # c++ 0x
 #if("${CMAKE_CXX_COMPILER_ID}" MATCHES "clang") 
@@ -45,11 +43,7 @@ else(CMAKE_COMPILER_IS_GNUCXX)
   message(SEND_ERROR "You need partial C++0x support for N2351, N2672, N1984. Currently this build toolchain supports only GCC >= 4.4. If your compiler supports these specifications, please send us a patch.")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-
-add_library(pointmatcher_ros 
-  src/point_cloud.cpp 
-  src/transform.cpp
-)
+add_definitions(-DHAVE_YAML_CPP)
 
 include_directories(
   include
@@ -58,12 +52,24 @@ include_directories(
   ${POINTMATCHER_INCLUDE_DIRS}
 )
 
+link_directories(${libpointmatcher_LIB})
+
+add_library(pointmatcher_ros src/point_cloud.cpp src/transform.cpp)
 target_link_libraries(pointmatcher_ros 
 yaml-cpp 
 ${catkin_LIBRARIES} 
 ${PM_LIBRARIES} 
 ${POINTMATCHER_LIBRARIES}
 )
+
+add_executable(
+    matcher_service 
+    src/matcher_service.cpp 
+    src/point_cloud.cpp
+    src/transform.cpp
+)
+add_dependencies(matcher_service ${PROJECT_NAME}_gencpp)
+target_link_libraries(matcher_service pointmatcher ${catkin_LIBRARIES})
 
 install(TARGETS pointmatcher_ros
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
