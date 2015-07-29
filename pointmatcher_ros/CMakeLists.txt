@@ -15,6 +15,17 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PkgConfig REQUIRED)
 find_package(libpointmatcher REQUIRED)
 
+add_service_files(
+   FILES
+   MatchClouds.srv
+)
+
+generate_messages(
+	DEPENDENCIES
+	sensor_msgs
+)
+
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES pointmatcher_ros
@@ -27,6 +38,7 @@ catkin_package(
   eigen_conversions
   message_runtime
 )
+
 
 # c++ 0x
 #if("${CMAKE_CXX_COMPILER_ID}" MATCHES "clang") 
@@ -59,6 +71,8 @@ target_link_libraries(pointmatcher_ros
 yaml-cpp 
 pointmatcher
 ${catkin_LIBRARIES} 
+${PM_LIBRARIES}
+${POINTMATCHER_LIBRARIES}
 )
 
 add_executable(
@@ -67,7 +81,7 @@ add_executable(
     src/point_cloud.cpp
     src/transform.cpp
 )
-add_dependencies(matcher_service ${PROJECT_NAME}_gencpp)
+add_dependencies(matcher_service pointmatcher_ros_gencpp)
 target_link_libraries(matcher_service pointmatcher ${catkin_LIBRARIES})
 
 install(TARGETS pointmatcher_ros
